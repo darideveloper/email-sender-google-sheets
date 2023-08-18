@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 from email_manager.sender import EmailManager
 from spreadsheets.google_sheets import SheetsManager
@@ -23,19 +24,24 @@ def main ():
     sheets_manager.set_sheet ("contact form")
     data = sheets_manager.get_data ()
     
+    today = datetime.now ().strftime ("%d/%m/%Y")
+    
     for row in data:
+        
+        email = row["email"]
+        print (f"Sending email to {email}")
     
         # Submit email
         email_manager.send_email (
-            receivers=[row["email"]],
+            receivers=[email],
             subject=EMAIL_SUBJECT,
             html_path=html_path
         )
         
-        # Update date in google sheets
-        print ()
-        
-        # Update status in google sheets
+        # Update last update and is new in google sheets
+        current_row = data.index (row) + 2
+        sheets_manager.write_cell (today, current_row, 2)
+        sheets_manager.write_cell ("FALSE", current_row, 3)
         
     pass
 
