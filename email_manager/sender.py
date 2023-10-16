@@ -1,11 +1,11 @@
 import os
-import sys
 import smtplib
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
 from .servers_ports import servers_ports_dic
+from email.mime.image import MIMEImage
 
 class EmailManager (): 
     """Manage emails: connect and send mails
@@ -41,8 +41,8 @@ class EmailManager ():
         # login
         self.smtpObj.login (self.email, self.password)
             
-    def send_email (self, receivers=[], subject="", body="", 
-            files=[], html_path="", html_data={}): 
+    def send_email (self, receivers:list, subject:str, body:str="", files:list=[], 
+                    html_path:str="", html_data:dict={}, imgs_paths:list=[]): 
         """Send email to specific receivers
         """
         
@@ -83,6 +83,18 @@ class EmailManager ():
                 # Add file to the message
                 part['Content-Disposition'] = 'attachment; filename="{}"'.format(os.path.basename(file))
                 message.attach(part)
+                
+            # Attach the image
+            for img_key, image_path in imgs_paths.items():
+                image_data = open(image_path, "rb").read()
+                image_cid = img_key.split("/")[-1].replace("-", "").replace("_", "").replace(" ", "").replace(".", "")
+
+                image_part = MIMEImage(image_data)
+                image_part.add_header('Content-ID', f'<{image_cid}>')
+                message.attach(image_part)
+                
+                # Replace image in html
+                html_data[img_key] = f"cid:{image_cid}"
 
             # Add html from file
             if html_path: 
