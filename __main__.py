@@ -13,6 +13,7 @@ GOOGLE_SHEETS = os.getenv ("GOOGLE_SHEETS")
 current_folder = os.path.dirname (__file__)
 creds_path = os.path.join (current_folder, "credentials.json")
 html_path = os.path.join (current_folder, "template.html")
+images_folder = os.path.join (current_folder, "imgs")
 
 def main (): 
     
@@ -35,7 +36,13 @@ def main ():
         email_manager.send_email (
             receivers=[email],
             subject=EMAIL_SUBJECT,
-            html_path=html_path
+            html_path=html_path,
+            html_data={
+                "email": email,
+            },
+            imgs_paths = {
+                "image1": os.path.join (images_folder, "banner-small.png"),
+            }
         )
         
         # Update last update and is new in google sheets
